@@ -50,10 +50,22 @@ class TwoFactorController extends AbstractController
         $userId = $session->get('2fa_user_id');
         $user = $userId ? $this->userRepository->find($userId) : null;
 
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // If the user uses Email OTP, send the initial code if they just arrived
+        if ($user->getTwoFactorType() === 'email' && !$request->isMethod('POST')) {
+            $canResend = $this->otpService->canResendOtp($user);
+            if ($canResend['allowed']) {
+                $this->otpService->generateAndSendOtp($user, 'login_2fa', $request->getClientIp());
+            }
+        }
+
         return $this->render('auth/two_factor.html.twig', [
             'error' => $error,
-            'two_factor_type' => $user?->getTwoFactorType() ?? 'email',
-            'user_email' => $user?->getEmail(),
+            'two_factor_type' => $user->getTwoFactorType(),
+            'user_email' => $user->getEmail(),
         ]);
     }
 
@@ -77,9 +89,7 @@ class TwoFactorController extends AbstractController
         }
 
         $userId = $session->get('2fa_user_id');
-
-        // Retrieve user
-        $user = $this->getUser();
+        $user = $userId ? $this->userRepository->find($userId) : null;
 
         if ($user instanceof User) {
             $canResend = $this->otpService->canResendOtp($user);

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * OAuthController — Handles OAuth2 social login flows.
@@ -35,6 +36,7 @@ class OAuthController extends AbstractController
         private readonly OAuthService $oauthService,
         private readonly UserAuthenticatorInterface $userAuthenticator,
         private readonly \App\Security\AppAuthenticator $appAuthenticator,
+        private readonly LoggerInterface $logger,
     ) {}
 
     /**
@@ -125,6 +127,13 @@ class OAuthController extends AbstractController
             ) ?? $this->redirectToRoute('app_profile');
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Social login failed. Please try again or use email login.');
+
+            $this->logger->error('Social login failed', [
+                'provider' => $provider->value,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
 
             return $this->redirectToRoute('app_login');
         }

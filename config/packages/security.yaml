@@ -39,7 +39,7 @@ security:
             form_login:
                 login_path: security_admin_login
                 check_path: security_admin_login
-                default_target_path: easyadmin
+                default_target_path: admin
                 enable_csrf: true
             logout:
                 path: admin_logout
