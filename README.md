@@ -151,9 +151,6 @@ If you find this project helpful and want to support its continued development, 
     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
 </a>
 
-### Scan to Support
-![Support QR Code](public/images/support_qr.png)
-
 ---
 
 ## 📜 License
