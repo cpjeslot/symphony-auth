@@ -205,6 +205,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => false])]
     private bool $otpVerified = false;
 
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $totpSecret = null;
+
+    #[ORM\Column(length: 20, options: ['default' => 'email'])]
+    private string $twoFactorType = 'email';
+
     // ── Verification Status ─────────────────────────────────────────────────────
 
     #[ORM\Column(options: ['default' => false])]
@@ -730,6 +736,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOtpVerified(bool $otpVerified): static
     {
         $this->otpVerified = $otpVerified;
+        return $this;
+    }
+
+    public function getTotpSecret(): ?string
+    {
+        return $this->totpSecret;
+    }
+
+    public function setTotpSecret(?string $totpSecret): static
+    {
+        $this->totpSecret = $totpSecret;
+        return $this;
+    }
+
+    public function getTwoFactorType(): string
+    {
+        return $this->twoFactorType;
+    }
+
+    public function setTwoFactorType(string $twoFactorType): static
+    {
+        $this->twoFactorType = $twoFactorType;
         return $this;
     }
 

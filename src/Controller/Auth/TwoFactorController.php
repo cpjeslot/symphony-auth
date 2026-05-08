@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Auth;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Service\Otp\OtpService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,7 @@ class TwoFactorController extends AbstractController
 {
     public function __construct(
         private readonly OtpService $otpService,
+        private readonly UserRepository $userRepository,
     ) {}
 
     /**
@@ -45,8 +47,13 @@ class TwoFactorController extends AbstractController
         $error = $request->getSession()->get(SecurityRequestAttributes::AUTHENTICATION_ERROR);
         $request->getSession()->remove(SecurityRequestAttributes::AUTHENTICATION_ERROR);
 
+        $userId = $session->get('2fa_user_id');
+        $user = $userId ? $this->userRepository->find($userId) : null;
+
         return $this->render('auth/two_factor.html.twig', [
             'error' => $error,
+            'two_factor_type' => $user?->getTwoFactorType() ?? 'email',
+            'user_email' => $user?->getEmail(),
         ]);
     }
 

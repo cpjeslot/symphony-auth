@@ -96,7 +96,7 @@ security:
 
         # Auth routes — public
         - { path: ^/auth/(login|register|forgot-password|reset-password|verify|oauth), roles: PUBLIC_ACCESS }
-        - { path: ^/auth/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
+        - { path: ^/auth/2fa, roles: PUBLIC_ACCESS }
 
         # Profile — authenticated users only
         - { path: ^/profile, roles: ROLE_USER }

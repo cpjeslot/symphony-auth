@@ -9,6 +9,7 @@ use App\Repository\ActiveSessionRepository;
 use App\Repository\LoginHistoryRepository;
 use App\Service\Otp\OtpService;
 use App\Service\Security\AuditLogService;
+use App\Service\Security\TotpService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +32,7 @@ class ProfileController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly OtpService $otpService,
         private readonly AuditLogService $auditLog,
+        private readonly TotpService $totpService,
     ) {}
 
     /**
@@ -82,9 +84,78 @@ class ProfileController extends AbstractController
         }
 
         $user->setTwoFactorEnabled(true);
+        $user->setTwoFactorType('email'); // Default to email
 
         $this->auditLog->logTwoFactorEnabled($user);
-        $this->addFlash('success', 'Two-factor authentication has been enabled.');
+        $this->addFlash('success', 'Two-factor authentication (Email OTP) has been enabled.');
+
+        return $this->redirectToRoute('app_profile_security');
+    }
+
+    /**
+     * Setup TOTP — generate secret and show QR code.
+     */
+    #[Route('/security/2fa/setup-totp', name: 'app_2fa_setup_totp', methods: ['GET'])]
+    public function setupTotp(Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if ($user->isTwoFactorEnabled() && $user->getTwoFactorType() === 'totp') {
+            $this->addFlash('info', 'Authenticator App is already set up.');
+            return $this->redirectToRoute('app_profile_security');
+        }
+
+        // Generate a new temporary secret
+        $secret = $this->totpService->generateSecret();
+        
+        // Store in session for verification step
+        $request->getSession()->set('totp_setup_secret', $secret);
+
+        $qrUri = $this->totpService->getQrUri($user, $secret);
+
+        return $this->render('profile/setup_totp.html.twig', [
+            'user' => $user,
+            'secret' => $secret,
+            'qr_uri' => $qrUri,
+        ]);
+    }
+
+    /**
+     * Enable TOTP — verify code and finalize setup.
+     */
+    #[Route('/security/2fa/enable-totp', name: 'app_2fa_enable_totp', methods: ['POST'])]
+    public function enableTotp(Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('totp_enable', (string) $request->request->get('_csrf_token', ''))) {
+            $this->addFlash('error', 'Invalid security token.');
+            return $this->redirectToRoute('app_2fa_setup_totp');
+        }
+
+        $secret = $request->getSession()->get('totp_setup_secret');
+        if (!$secret) {
+            $this->addFlash('error', 'Session expired. Please restart setup.');
+            return $this->redirectToRoute('app_2fa_setup_totp');
+        }
+
+        $code = (string) $request->request->get('code', '');
+        if (!$this->totpService->verifyCode($secret, $code)) {
+            $this->addFlash('error', 'Invalid verification code. Please try again.');
+            return $this->redirectToRoute('app_2fa_setup_totp');
+        }
+
+        // Success — finalize setup
+        $user->setTotpSecret($secret);
+        $user->setTwoFactorType('totp');
+        $user->setTwoFactorEnabled(true);
+        
+        $request->getSession()->remove('totp_setup_secret');
+        
+        $this->auditLog->logTwoFactorEnabled($user);
+        $this->addFlash('success', 'Authenticator App has been enabled successfully.');
 
         return $this->redirectToRoute('app_profile_security');
     }
@@ -104,6 +175,9 @@ class ProfileController extends AbstractController
         }
 
         $user->setTwoFactorEnabled(false);
+        $user->setTotpSecret(null); // Clear TOTP secret
+        $user->setTwoFactorType('email'); // Reset to default
+
         $this->auditLog->logTwoFactorDisabled($user);
         $this->addFlash('success', 'Two-factor authentication has been disabled.');
 

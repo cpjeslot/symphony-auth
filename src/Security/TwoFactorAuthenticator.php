@@ -7,6 +7,7 @@ namespace App\Security;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Otp\OtpService;
+use App\Service\Security\TotpService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,6 +40,7 @@ class TwoFactorAuthenticator extends AbstractAuthenticator
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly OtpService $otpService,
+        private readonly TotpService $totpService,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {}
 
@@ -87,12 +89,21 @@ class TwoFactorAuthenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('Please enter the verification code.');
         }
 
-        // Verify the OTP using constant-time comparison
-        $isValid = $this->otpService->verifyOtp($user, $submittedOtp, 'login_2fa');
+        // Verify the code based on the user's preferred method
+        $isValid = false;
+        if ($user->getTwoFactorType() === 'totp') {
+            $secret = $user->getTotpSecret();
+            if ($secret) {
+                $isValid = $this->totpService->verifyCode($secret, $submittedOtp);
+            }
+        } else {
+            // Default to Email OTP
+            $isValid = $this->otpService->verifyOtp($user, $submittedOtp, 'login_2fa');
+        }
 
         if (!$isValid) {
             throw new CustomUserMessageAuthenticationException(
-                'Invalid or expired verification code. Please try again or request a new code.'
+                'Invalid or expired verification code. Please try again.'
             );
         }
 
