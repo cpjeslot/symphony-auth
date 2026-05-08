@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enterprise Security Platform{% endblock %}
+
+{% block body %}
+<div class="landing-hero d-flex align-items-center justify-content-center">
+    <div class="container text-center animate-fade-in">
+        <div class="brand-badge mb-4">
+            <span class="badge rounded-pill bg-primary-gradient px-3 py-2">
+                <i class="bi bi-shield-check me-2"></i> Next-Gen Authentication
+            </span>
+        </div>
+        
+        <h1 class="display-3 fw-bold mb-3 text-gradient">
+            Secure Your Enterprise <br> with Symphony Auth
+        </h1>
+        
+        <p class="lead text-muted mx-auto mb-5" style="max-width: 700px;">
+            A production-grade, modular authentication system featuring JWT, 2FA, OAuth2, 
+            and real-time security auditing. Built for scale, engineered for security.
+        </p>
+        
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mb-5">
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                <a href="{{ path('app_profile') }}" class="btn btn-primary btn-lg px-5 shadow-lg">
+                    <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                </a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('admin') }}" class="btn btn-outline-accent btn-lg px-5">
+                        <i class="bi bi-gear-fill me-2"></i> Admin Panel
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-primary btn-lg px-5 shadow-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
+                </a>
+                <a href="{{ path('app_register') }}" class="btn btn-outline-light btn-lg px-5">
+                    <i class="bi bi-person-plus me-2"></i> Create Account
+                </a>
+            {% endif %}
+        </div>
+        
+        <div class="row g-4 mt-5 text-start">
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 border-glow">
+                    <div class="icon-box mb-3 bg-blue">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h3 class="h5 fw-bold">Enterprise Security</h3>
+                    <p class="text-muted small">Argon2id hashing, brute-force protection, and multi-factor authentication by default.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 border-glow">
+                    <div class="icon-box mb-3 bg-purple">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <h3 class="h5 fw-bold">JWT & OAuth2</h3>
+                    <p class="text-muted small">Stateless authentication for APIs and seamless social login integration with Google, GitHub, and more.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 border-glow">
+                    <div class="icon-box mb-3 bg-pink">
+                        <i class="bi bi-eye-fill"></i>
+                    </div>
+                    <h3 class="h5 fw-bold">Live Audit Logs</h3>
+                    <p class="text-muted small">Real-time monitoring and reporting of all security events to detect and respond to threats instantly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .landing-hero {
+        min-height: 100vh;
+        background: 
+            radial-gradient(circle at 10% 20%, rgba(67, 97, 238, 0.1) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(247, 37, 133, 0.08) 0%, transparent 40%),
+            var(--dark-bg);
+        padding-top: 80px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .landing-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2330363d' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        z-index: 0;
+    }
+    
+    .container { position: relative; z-index: 1; }
+
+    .text-gradient {
+        background: linear-gradient(to bottom, #ffffff 0%, #a5b4fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1px;
+    }
+    
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+        box-shadow: 0 0 15px rgba(67, 97, 238, 0.3);
+    }
+    
+    .btn-outline-accent {
+        border: 2px solid var(--accent);
+        color: var(--accent);
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    .btn-outline-accent:hover {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 0 20px rgba(247, 37, 133, 0.4);
+    }
+    
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+    }
+    
+    .bg-blue { background: rgba(67, 97, 238, 0.2); color: var(--primary); }
+    .bg-purple { background: rgba(123, 45, 139, 0.2); color: #b5179e; }
+    .bg-pink { background: rgba(247, 37, 133, 0.2); color: var(--accent); }
+    
+    .border-glow {
+        transition: all 0.3s ease;
+    }
+    
+    .border-glow:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 30px rgba(67, 97, 238, 0.15);
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

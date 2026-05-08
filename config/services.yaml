@@ -1,0 +1,50 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    app.mailer_from_address: '%env(MAILER_FROM_ADDRESS)%'
+    app.mailer_from_name: '%env(MAILER_FROM_NAME)%'
+    app.otp_expiry: 300
+    app.otp_resend_cooldown: 60
+    app.email_verify_expiry: 172800 # 48 hours
+    app.password_reset_expiry: 7200 # 2 hours
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $mailerFromAddress: '%app.mailer_from_address%'
+            $mailerFromName: '%app.mailer_from_name%'
+            $otpExpiry: '%app.otp_expiry%'
+            $otpResendCooldown: '%app.otp_resend_cooldown%'
+            $emailVerifyExpiry: '%app.email_verify_expiry%'
+            $passwordResetExpiry: '%app.password_reset_expiry%'
+            $appEnv: '%kernel.environment%'
+            $loginLimiter: '@limiter.app_login'
+            $registrationLimiter: '@limiter.registration_limiter'
+            $passwordResetLimiter: '@limiter.password_reset_limiter'
+            $apiLoginLimiter: '@limiter.api_login_limiter'
+            $apiGeneralLimiter: '@limiter.api_general'
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # Register services that require specific monolog channels
+    App\Service\Security\AuditLogService:
+        arguments:
+            $auditLogger: '@monolog.logger.security'
+
+    # Custom Error Handler (Optional - for clean JSON errors in API)
+    # App\EventListener\ExceptionListener:
+    #     tags:
+    #         - { name: kernel.event_listener, event: kernel.exception }

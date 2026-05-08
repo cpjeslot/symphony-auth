@@ -1,0 +1,120 @@
+security:
+    # Password hashing — Argon2id is the most secure option for PHP 8.3+
+    password_hashers:
+        App\Entity\User:
+            algorithm: argon2id
+            memory_cost: 65536      # 64 MB — balanced security/performance
+            time_cost: 4            # 4 iterations
+
+    # User provider: can look up by email OR mobile_number
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email    # Primary lookup by email
+
+        # Chained provider for email OR mobile login
+        combined_provider:
+            chain:
+                providers: [app_user_provider]
+
+    firewalls:
+        # ─── Development profiler (no auth) ───────────────────────────────────
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # ─── REST API firewall (stateless JWT) ────────────────────────────────
+        api:
+            pattern: ^/api/
+            stateless: true
+            provider: app_user_provider
+            jwt: ~                       # LexikJWT integration
+            # Rate limiting guard applied via custom event subscriber
+
+        # ─── Admin panel firewall ─────────────────────────────────────────────
+        admin:
+            pattern: ^/admin
+            provider: app_user_provider
+            form_login:
+                login_path: security_admin_login
+                check_path: security_admin_login
+                default_target_path: easyadmin
+                enable_csrf: true
+            logout:
+                path: admin_logout
+                target: security_admin_login
+            remember_me:
+                secret: '%env(APP_SECRET)%'
+                lifetime: 604800        # 7 days
+                secure: true
+                httponly: true
+
+        # ─── Main web firewall ────────────────────────────────────────────────
+        main:
+            lazy: true
+            provider: app_user_provider
+            entry_point: App\Security\AppAuthenticator
+            custom_authenticators:
+                - App\Security\AppAuthenticator
+                - App\Security\TwoFactorAuthenticator
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: _identifier    # email or mobile
+                password_parameter: _password
+                enable_csrf: true
+                default_target_path: app_profile
+            logout:
+                path: app_logout
+                target: app_login
+                # Clear session on logout to prevent session fixation
+                invalidate_session: true
+                delete_cookies:
+                    REMEMBERME: ~
+            remember_me:
+                secret: '%env(APP_SECRET)%'
+                lifetime: 2592000       # 30 days
+                secure: true
+                httponly: true
+                samesite: strict
+                # Token-based remember-me (stored in DB, revocable)
+                token_provider:
+                    doctrine: true
+            # Session fixation: regenerate session ID on login
+            switch_user: false
+
+    # ─── Access control rules ─────────────────────────────────────────────────
+    access_control:
+        # API routes — JWT protected
+        - { path: ^/api/auth/(login|register|forgot-password|reset-password), roles: PUBLIC_ACCESS }
+        - { path: ^/api/, roles: IS_AUTHENTICATED_FULLY }
+
+        # Admin — requires ROLE_ADMIN
+        - { path: ^/admin/login, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Auth routes — public
+        - { path: ^/auth/(login|register|forgot-password|reset-password|verify|oauth), roles: PUBLIC_ACCESS }
+        - { path: ^/auth/2fa, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
+
+        # Profile — authenticated users only
+        - { path: ^/profile, roles: ROLE_USER }
+
+        # Public Landing Page
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+
+        # Everything else — authenticated
+        - { path: ^/, roles: ROLE_USER }
+
+    # ─── Role hierarchy ───────────────────────────────────────────────────────
+    role_hierarchy:
+        ROLE_MODERATOR: [ROLE_USER]
+        ROLE_ADMIN:     [ROLE_MODERATOR]
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN]
+
+when@test:
+    security:
+        password_hashers:
+            App\Entity\User:
+                algorithm: plaintext   # Speed up tests — NEVER in production

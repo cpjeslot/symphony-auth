@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Security Settings{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {# Sidebar #}
+        <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+            <nav class="nav flex-column">
+                <a href="{{ path('app_profile') }}" class="nav-link">
+                    <i class="bi bi-person-circle"></i>Profile Overview
+                </a>
+                <a href="{{ path('app_profile_security') }}" class="nav-link active">
+                    <i class="bi bi-shield-lock"></i>Security Settings
+                </a>
+                <a href="{{ path('app_profile_sessions') }}" class="nav-link">
+                    <i class="bi bi-laptop"></i>Active Sessions
+                </a>
+                <a href="{{ path('app_profile_login_history') }}" class="nav-link">
+                    <i class="bi bi-clock-history"></i>Login History
+                </a>
+                <hr style="border-color: var(--border);">
+                <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i>Sign Out
+                </a>
+            </nav>
+        </div>
+
+        {# Main Content #}
+        <div class="col-md-9 col-lg-10 py-4 px-4">
+            <div class="mb-4">
+                <h2 class="fw-bold">Security Settings</h2>
+                <p class="text-muted">Manage your account security and authentication methods.</p>
+            </div>
+
+            <div class="row g-4">
+                {# Two-Factor Authentication #}
+                <div class="col-md-12">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">Two-Factor Authentication (2FA)</h5>
+                                <p class="text-muted small mb-0">Add an extra layer of security to your account using email verification.</p>
+                            </div>
+                            {% if user.twoFactorEnabled %}
+                                <span class="badge bg-success">Enabled</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Disabled</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="bg-dark p-3 rounded border border-secondary mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded">
+                                    <i class="bi bi-envelope-at text-primary fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Email OTP Verification</div>
+                                    <div class="text-muted small">Verification codes will be sent to <strong>{{ user.email }}</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if user.twoFactorEnabled %}
+                            <form action="{{ path('app_2fa_disable') }}" method="POST">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('2fa_disable') }}">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-shield-x me-2"></i>Disable 2FA
+                                </button>
+                            </form>
+                        {% else %}
+                            <form action="{{ path('app_2fa_enable') }}" method="POST">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('2fa_enable') }}">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-shield-check me-2"></i>Enable 2FA
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Password Management #}
+                <div class="col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-3">Password</h5>
+                        <p class="text-muted small mb-4">It's a good idea to use a strong password that you're not using elsewhere.</p>
+                        
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded border border-secondary mb-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-key text-muted"></i>
+                                <span class="small">Last changed: {{ user.lastLogin ? user.lastLogin|date('M j, Y') : 'Never' }}</span>
+                            </div>
+                            <a href="{{ path('app_profile_change_password') }}" class="btn btn-sm btn-outline-primary">Change</a>
+                        </div>
+                    </div>
+                </div>
+
+                {# Identity Verification #}
+                <div class="col-md-6">
+                    <div class="glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-3">Identity Verification</h5>
+                        <p class="text-muted small mb-4">Verify your information to ensure account recovery options.</p>
+                        
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <div class="small fw-medium">Email Address</div>
+                                    <div class="text-muted smaller">{{ user.email }}</div>
+                                </div>
+                                {% if user.emailVerified %}
+                                    <span class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
+                                {% else %}
+                                    <span class="text-warning small"><i class="bi bi-exclamation-triangle-fill me-1"></i>Pending</span>
+                                {% endif %}
+                            </li>
+                            <li class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="small fw-medium">Mobile Number</div>
+                                    <div class="text-muted smaller">{{ user.mobileNumber ?? 'Not provided' }}</div>
+                                </div>
+                                {% if user.mobileNumber %}
+                                    <span class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>Linked</span>
+                                {% else %}
+                                    <button class="btn btn-sm btn-link text-primary p-0">Add</button>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    # Global variables available in all templates
+    globals:
+        app_name: 'Auth System'
+        app_domain: '%env(APP_DOMAIN)%'
+
+when@dev:
+    twig:
+        auto_reload: true
+
+when@test:
+    twig:
+        strict_variables: true

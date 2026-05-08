@@ -1,0 +1,41 @@
+knpu_oauth2_client:
+    clients:
+        # ── Google OAuth2 ─────────────────────────────────────────────────────
+        google:
+            type: google
+            client_id: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
+            client_secret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
+            redirect_route: oauth_google_callback
+            redirect_params: {}
+            # Request additional scopes
+            use_state: true
+
+        # ── GitHub OAuth2 ─────────────────────────────────────────────────────
+        github:
+            type: github
+            client_id: '%env(OAUTH_GITHUB_CLIENT_ID)%'
+            client_secret: '%env(OAUTH_GITHUB_CLIENT_SECRET)%'
+            redirect_route: oauth_github_callback
+            redirect_params: {}
+            use_state: true
+
+        # ── Facebook OAuth2 ───────────────────────────────────────────────────
+        facebook:
+            type: facebook
+            client_id: '%env(OAUTH_FACEBOOK_CLIENT_ID)%'
+            client_secret: '%env(OAUTH_FACEBOOK_CLIENT_SECRET)%'
+            redirect_route: oauth_facebook_callback
+            redirect_params: {}
+            graph_api_version: v18.0
+            use_state: true
+
+        # ── Apple OAuth2 ──────────────────────────────────────────────────────
+        # Note: Apple OAuth2 uses client_secret_post and a signed JWT as client secret
+        # Requires: paid Apple Developer account, Service ID, and private key
+        # apple:
+        #     type: apple
+        #     client_id: '%env(OAUTH_APPLE_CLIENT_ID)%'
+        #     client_secret: '%env(OAUTH_APPLE_CLIENT_SECRET)%'   # Pre-generated JWT
+        #     redirect_route: oauth_apple_callback
+        #     redirect_params: {}
+        #     use_state: true

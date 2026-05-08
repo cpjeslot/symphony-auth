@@ -1,0 +1,9 @@
+framework:
+    validation:
+        email_validation_mode: html5
+        # Enable translation of validation messages
+        translation_domain: validators
+        # Auto-map validation to DTOs
+        auto_mapping:
+            App\DTO\: []
+            App\Form\: []

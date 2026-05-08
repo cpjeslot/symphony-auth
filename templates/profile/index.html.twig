@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+<div class="container-fluid" style="min-height: calc(100vh - 56px);">
+    <div class="row">
+        
+        {# Sidebar #}
+        <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+            <nav class="nav flex-column">
+                <a href="{{ path('app_profile') }}" class="nav-link {{ app.current_route == 'app_profile' ? 'active' : '' }}">
+                    <i class="bi bi-person-circle"></i>Profile Overview
+                </a>
+                <a href="{{ path('app_profile_security') }}" class="nav-link {{ app.current_route starts with 'app_profile_security' ? 'active' : '' }}">
+                    <i class="bi bi-shield-lock"></i>Security Settings
+                </a>
+                <a href="{{ path('app_profile_sessions') }}" class="nav-link">
+                    <i class="bi bi-laptop"></i>Active Sessions
+                </a>
+                <a href="{{ path('app_profile_login_history') }}" class="nav-link">
+                    <i class="bi bi-clock-history"></i>Login History
+                </a>
+                <hr style="border-color: var(--border);">
+                <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i>Sign Out
+                </a>
+            </nav>
+        </div>
+        
+        {# Main Content #}
+        <div class="col-md-9 col-lg-10 py-4 px-4">
+            
+            {# Header #}
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div style="width: 64px; height: 64px; border-radius: 50%; 
+                            background: linear-gradient(135deg, #4361ee, #f72585);
+                            display: flex; align-items: center; justify-content: center;
+                            font-size: 1.5rem; font-weight: 700; color: white; flex-shrink: 0;">
+                    {{ user.firstName|first|upper }}{{ user.lastName|first|upper }}
+                </div>
+                <div>
+                    <h2 class="mb-0 fw-bold">{{ user.fullName }}</h2>
+                    <p class="text-muted mb-0 small">
+                        <i class="bi bi-envelope me-1"></i>{{ user.email }}
+                        {% if user.emailVerified %}
+                            <span class="badge bg-success ms-2" style="font-size: 0.7rem;">
+                                <i class="bi bi-check-circle me-1"></i>Verified
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning ms-2" style="font-size: 0.7rem;">Unverified</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                {# Account Status Card #}
+                <div class="col-md-6 col-xl-4">
+                    <div class="glass-card p-3 h-100">
+                        <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">
+                            <i class="bi bi-info-circle me-2"></i>Account Status
+                        </h6>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="status-badge status-{{ user.accountStatus.value }}">
+                                {{ user.accountStatus.label() }}
+                            </span>
+                        </div>
+                        <div class="small text-muted">
+                            <div><i class="bi bi-calendar3 me-2"></i>Member since {{ user.createdAt|date('M j, Y') }}</div>
+                            {% if user.lastLogin %}
+                                <div class="mt-1"><i class="bi bi-clock me-2"></i>Last login {{ user.lastLogin|date('M j, Y H:i') }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {# 2FA Status Card #}
+                <div class="col-md-6 col-xl-4">
+                    <div class="glass-card p-3 h-100">
+                        <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">
+                            <i class="bi bi-shield-check me-2"></i>Security
+                        </h6>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="small">Two-Factor Auth</span>
+                            {% if user.twoFactorEnabled %}
+                                <span class="badge" style="background: rgba(6,214,160,0.15); color: #06d6a0;">
+                                    <i class="bi bi-check-circle me-1"></i>Enabled
+                                </span>
+                            {% else %}
+                                <span class="badge" style="background: rgba(255,209,102,0.15); color: #ffd166;">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Disabled
+                                </span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ path('app_profile_security') }}" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                            <i class="bi bi-gear me-1"></i>Security Settings
+                        </a>
+                    </div>
+                </div>
+                
+                {# Quick Actions Card #}
+                <div class="col-md-6 col-xl-4">
+                    <div class="glass-card p-3 h-100">
+                        <h6 class="fw-semibold mb-3 text-muted text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">
+                            <i class="bi bi-lightning me-2"></i>Quick Actions
+                        </h6>
+                        <div class="d-flex flex-column gap-2">
+                            <a href="{{ path('app_profile_change_password') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-lock me-1"></i>Change Password
+                            </a>
+                            <a href="{{ path('app_profile_sessions') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-laptop me-1"></i>Manage Sessions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {# Recent Login Activity #}
+                {% if recent_logins is not empty %}
+                <div class="col-12">
+                    <div class="glass-card p-4">
+                        <h6 class="fw-semibold mb-3">
+                            <i class="bi bi-clock-history me-2"></i>Recent Login Activity
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover" style="background: transparent;">
+                                <thead>
+                                    <tr class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        <th>Status</th>
+                                        <th>Date & Time</th>
+                                        <th>IP Address</th>
+                                        <th>Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 0.875rem;">
+                                    {% for login in recent_logins %}
+                                    <tr>
+                                        <td>
+                                            {% if login.successful %}
+                                                <span class="badge" style="background: rgba(6,214,160,0.15); color: #06d6a0;">
+                                                    <i class="bi bi-check-circle me-1"></i>Success
+                                                </span>
+                                            {% else %}
+                                                <span class="badge" style="background: rgba(239,71,111,0.15); color: #ef476f;">
+                                                    <i class="bi bi-x-circle me-1"></i>Failed
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-muted">{{ login.createdAt|date('M j, Y H:i') }}</td>
+                                        <td class="text-muted font-monospace">{{ login.ipAddress ?? 'Unknown' }}</td>
+                                        <td class="text-muted">{{ login.authMethod ?? 'email' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{{ path('app_profile_login_history') }}" class="btn btn-sm btn-outline-secondary">
+                            View all login history →
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

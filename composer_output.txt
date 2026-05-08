@@ -1,0 +1,24 @@
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Package operations: 173 installs, 0 updates, 0 removals
+    0 [>---------------------------]    0 [->--------------------------]
+  - Installing symfony/flex (v2.10.0): Extracting archive
+Plugin initialization failed ("./symfony.lock" does not contain valid JSON
+Parse error on line 1:
+A...
+^
+Expected one of: 'STRING', 'NUMBER', 'NULL', 'TRUE', 'FALSE', '{', '['), uninstalling plugin
+  - Removing symfony/flex (v2.10.0)
+    Install of symfony/flex failed
+
+In JsonFile.php line 398:
+                                                                          
+  "./symfony.lock" does not contain valid JSON                            
+  Parse error on line 1:                                                  
+  A...                                                                    
+  ^                                                                       
+  Expected one of: 'STRING', 'NUMBER', 'NULL', 'TRUE', 'FALSE', '{', '['  
+                                                                          
+
+install [--prefer-source] [--prefer-dist] [--prefer-install PREFER-INSTALL] [--dry-run] [--download-only] [--dev] [--no-suggest] [--no-dev] [--no-security-blocking] [--no-blocking] [--no-autoloader] [--no-progress] [--no-install] [--audit] [--audit-format AUDIT-FORMAT] [-v|vv|vvv|--verbose] [-o|--optimize-autoloader] [-a|--classmap-authoritative] [--strict-psr-autoloader] [--apcu-autoloader] [--apcu-autoloader-prefix APCU-AUTOLOADER-PREFIX] [--ignore-platform-req IGNORE-PLATFORM-REQ] [--ignore-platform-reqs] [--source-fallback|--no-source-fallback] [--] [<packages>...]
+

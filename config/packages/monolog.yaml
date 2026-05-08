@@ -1,0 +1,70 @@
+monolog:
+    channels:
+        - security      # Security-specific channel
+        - audit         # Audit log channel
+        - performance   # Performance metrics channel
+
+    handlers:
+        # ── Application log ───────────────────────────────────────────────────
+        main:
+            type: fingers_crossed
+            action_level: error
+            handler: nested
+            buffer_size: 50
+
+        nested:
+            type: rotating_file
+            path: '%kernel.logs_dir%/%kernel.environment%.log'
+            level: debug
+            max_files: 30
+            formatter: monolog.formatter.json
+
+        # ── Console output ────────────────────────────────────────────────────
+        console:
+            type: console
+            process_psr_3_messages: false
+            channels: ['!event', '!doctrine', '!console']
+
+        # ── Security audit log (ALWAYS written, never buffered) ───────────────
+        security_audit:
+            type: rotating_file
+            path: '%kernel.logs_dir%/security_audit.log'
+            level: info
+            channels: [security, audit]
+            max_files: 90   # Keep 90 days of security logs
+            formatter: monolog.formatter.json
+
+        # ── Performance log ───────────────────────────────────────────────────
+        performance:
+            type: rotating_file
+            path: '%kernel.logs_dir%/performance.log'
+            level: info
+            channels: [performance]
+            max_files: 14
+            formatter: monolog.formatter.json
+
+when@dev:
+    monolog:
+        handlers:
+            main:
+                type: stream
+                path: '%kernel.logs_dir%/%kernel.environment%.log'
+                level: debug
+                channels: ['!event']
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ['!event', '!doctrine']
+
+when@test:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+            nested:
+                type: stream
+                path: '%kernel.logs_dir%/test.log'
+                level: debug

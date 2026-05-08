@@ -1,0 +1,71 @@
+framework:
+    messenger:
+        # ── Transports ────────────────────────────────────────────────────────
+        transports:
+            # Async email queue (high priority)
+            async_emails:
+                dsn: '%env(REDIS_URL)%'
+                options:
+                    stream: 'auth:emails'
+                    group: 'workers'
+                    consumer: 'worker_%kernel.container_class%'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 2
+                    max_delay: 30000
+
+            # General async tasks (normal priority)
+            async:
+                dsn: '%env(REDIS_URL)%'
+                options:
+                    stream: 'auth:async'
+                    group: 'workers'
+                    consumer: 'worker_%kernel.container_class%'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 2
+                    max_delay: 60000
+
+            # Failed message queue — for dead letters
+            failed:
+                dsn: '%env(REDIS_URL)%'
+                options:
+                    stream: 'auth:failed'
+
+        # ── Message routing ───────────────────────────────────────────────────
+        routing:
+            'Symfony\Component\Mailer\Messenger\SendEmailMessage': async_emails
+            'Symfony\Component\Notifier\Message\ChatMessage': async
+            'App\Message\SendOtpEmailMessage': async_emails
+            'App\Message\SendVerificationEmailMessage': async_emails
+            'App\Message\SendPasswordResetEmailMessage': async_emails
+            'App\Message\CleanupExpiredTokensMessage': async
+            'App\Message\RecordAuditLogMessage': async
+
+        # ── Failure transport ─────────────────────────────────────────────────
+        failure_transport: failed
+
+when@dev:
+    framework:
+        messenger:
+            transports:
+                # In dev, process synchronously to avoid needing Redis
+                async_emails:
+                    dsn: 'sync://'
+                async:
+                    dsn: 'sync://'
+                failed:
+                    dsn: 'in-memory://'
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async_emails:
+                    dsn: 'in-memory://'
+                async:
+                    dsn: 'in-memory://'
+                failed:
+                    dsn: 'in-memory://'

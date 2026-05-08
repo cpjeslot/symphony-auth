@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Active Sessions{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {# Sidebar #}
+        <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+            <nav class="nav flex-column">
+                <a href="{{ path('app_profile') }}" class="nav-link">
+                    <i class="bi bi-person-circle"></i>Profile Overview
+                </a>
+                <a href="{{ path('app_profile_security') }}" class="nav-link">
+                    <i class="bi bi-shield-lock"></i>Security Settings
+                </a>
+                <a href="{{ path('app_profile_sessions') }}" class="nav-link active">
+                    <i class="bi bi-laptop"></i>Active Sessions
+                </a>
+                <a href="{{ path('app_profile_login_history') }}" class="nav-link">
+                    <i class="bi bi-clock-history"></i>Login History
+                </a>
+                <hr style="border-color: var(--border);">
+                <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i>Sign Out
+                </a>
+            </nav>
+        </div>
+
+        {# Main Content #}
+        <div class="col-md-9 col-lg-10 py-4 px-4">
+            <div class="mb-4">
+                <h2 class="fw-bold">Active Sessions</h2>
+                <p class="text-muted">Devices and browsers where you are currently logged in.</p>
+            </div>
+
+            <div class="glass-card p-0 overflow-hidden">
+                <div class="p-4 border-bottom border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Current Devices</h5>
+                    <button class="btn btn-sm btn-outline-danger" disabled>Logout all other sessions</button>
+                </div>
+                
+                <div class="list-group list-group-flush">
+                    {% for session in sessions %}
+                        <div class="list-group-item bg-transparent border-secondary p-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="bg-dark bg-opacity-50 p-3 rounded-circle">
+                                    {% if 'Chrome' in session.deviceDescription %}
+                                        <i class="bi bi-browser-chrome text-primary fs-3"></i>
+                                    {% elseif 'Mobile' in session.userAgent or 'Android' in session.userAgent or 'iPhone' in session.userAgent %}
+                                        <i class="bi bi-phone text-primary fs-3"></i>
+                                    {% else %}
+                                        <i class="bi bi-laptop text-primary fs-3"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="fw-bold mb-1">{{ session.deviceDescription ?? 'Unknown Device' }}</h6>
+                                        {% if loop.first %}
+                                            <span class="badge bg-primary bg-opacity-10 text-primary">Current Session</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted small mb-1">
+                                        <i class="bi bi-geo-alt me-1"></i>{{ session.ipAddress }} • 
+                                        Last active: {{ session.lastActivityAt|date('M j, Y H:i') }}
+                                    </div>
+                                    <div class="text-muted smaller font-monospace">
+                                        {{ session.userAgent|slice(0, 100) }}...
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-link text-danger p-0" title="Revoke session">
+                                        <i class="bi bi-x-circle fs-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="p-5 text-center text-muted">
+                            <i class="bi bi-laptop fs-1 mb-3 d-block opacity-25"></i>
+                            <p>No active sessions found.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-20 rounded">
+                <div class="d-flex gap-3">
+                    <i class="bi bi-exclamation-triangle text-warning fs-5"></i>
+                    <div>
+                        <div class="fw-bold text-warning small">Security Notice</div>
+                        <p class="text-warning text-opacity-75 small mb-0">
+                            If you see a device you don't recognize, revoke the session immediately and change your password.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

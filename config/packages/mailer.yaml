@@ -1,0 +1,16 @@
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+        envelope:
+            sender: '%env(MAILER_FROM_ADDRESS)%'
+        headers:
+            From: '%env(MAILER_FROM_NAME)% <%env(MAILER_FROM_ADDRESS)%>'
+            X-Mailer: 'Symfony Mailer'
+        # Message bus integration: send emails via Messenger queue
+        message_bus: messenger.default_bus
+
+when@dev:
+    framework:
+        mailer:
+            # In dev, override to use Mailpit/Mailtrap
+            dsn: '%env(MAILER_DSN)%'

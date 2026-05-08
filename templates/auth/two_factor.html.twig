@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+    <div class="auth-card animate-fade-in" style="max-width: 420px;">
+        
+        <div class="auth-brand">
+            <div class="brand-icon" style="background: linear-gradient(135deg, #06d6a0, #4361ee);">🛡️</div>
+            <h1>Verify Your Identity</h1>
+            <p>Enter the 6-digit code sent to your email</p>
+        </div>
+        
+        <div class="glass-card p-4">
+            
+            {% if error %}
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+            
+            <form method="post" action="{{ path('app_2fa_verify') }}" id="otp-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('2fa_verify') }}">
+                
+                <div class="mb-4 text-center">
+                    <label class="form-label d-block mb-3">Verification Code</label>
+                    <input type="text" 
+                           name="otp" 
+                           id="otp-input"
+                           class="form-control otp-input text-center"
+                           inputmode="numeric"
+                           pattern="[0-9]{6}"
+                           maxlength="6"
+                           placeholder="000000"
+                           autocomplete="one-time-code"
+                           autofocus
+                           required
+                           style="font-size: 2rem; letter-spacing: 0.5rem; font-weight: 700;">
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bi bi-clock me-1"></i>
+                        Code expires in <span id="otp-timer" class="text-warning fw-semibold">5:00</span>
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                    <i class="bi bi-check2-circle me-2"></i>Verify Code
+                </button>
+            </form>
+            
+            {# Resend OTP #}
+            <form method="post" action="{{ path('app_2fa_resend') }}" id="resend-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('2fa_resend') }}">
+                <div class="text-center">
+                    <span class="text-muted small">Didn't receive the code?</span>
+                    <button type="submit" class="btn btn-link text-primary p-0 ms-1 small" id="resend-btn">
+                        Resend code
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="{{ path('app_logout') }}" class="text-muted small">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Login
+                </a>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <p class="text-muted" style="font-size: 0.75rem;">
+                <i class="bi bi-envelope-check me-1"></i>
+                Check your spam folder if you don't see the email
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// OTP auto-advance and numeric only
+const otpInput = document.getElementById('otp-input');
+otpInput.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    if (this.value.length === 6) {
+        document.getElementById('otp-form').submit();
+    }
+});
+
+// Countdown timer (5 minutes = 300 seconds)
+let seconds = 300;
+const timerEl = document.getElementById('otp-timer');
+const interval = setInterval(() => {
+    seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (seconds <= 0) {
+        clearInterval(interval);
+        timerEl.textContent = 'Expired';
+        timerEl.className = 'text-danger fw-semibold';
+        document.querySelector('button[type=submit]').disabled = true;
+    }
+    if (seconds <= 30) timerEl.className = 'text-danger fw-semibold';
+}, 1000);
+
+// Paste handler for OTP
+otpInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    otpInput.value = paste.replace(/\D/g, '').slice(0, 6);
+    if (otpInput.value.length === 6) document.getElementById('otp-form').submit();
+});
+</script>
+{% endblock %}

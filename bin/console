@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+use App\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Dotenv\Dotenv;
+use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\HttpFoundation\Request;
+
+if (!file_exists(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
+    throw new LogicException('Autoloader not found. Try running "composer install".');
+}
+
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
+
+return function (array $context) {
+    if ($context['APP_DEBUG']) {
+        umask(0000);
+
+        Debug::enable();
+    }
+
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+    return new Application($kernel);
+};

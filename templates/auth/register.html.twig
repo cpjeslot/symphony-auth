@@ -1,0 +1,229 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Account{% endblock %}
+{% block meta_description %}Register for a secure account{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+    <div class="auth-card animate-fade-in">
+        
+        {# Brand #}
+        <div class="auth-brand">
+            <div class="brand-icon">🔐</div>
+            <h1>Create Account</h1>
+            <p>Join us — it only takes a minute</p>
+        </div>
+        
+        {# Registration Form #}
+        <div class="glass-card p-4">
+            
+            {% if rate_limited is defined and rate_limited %}
+                <div class="alert alert-warning mb-3">
+                    <i class="bi bi-clock me-2"></i>
+                    Too many registration attempts. Please wait before trying again.
+                </div>
+            {% endif %}
+            
+            {{ form_start(form, {
+                'attr': {
+                    'id': 'registration-form',
+                    'novalidate': 'novalidate'
+                }
+            }) }}
+            
+            <div class="row g-3">
+                {# Name Row #}
+                <div class="col-6">
+                    <label class="form-label" for="registration_form_firstName">
+                        First Name <span class="text-danger">*</span>
+                    </label>
+                    {{ form_widget(form.firstName, {
+                        'attr': {'id': 'registration_form_firstName', 'class': 'form-control', 'autocomplete': 'given-name'}
+                    }) }}
+                    {{ form_errors(form.firstName) }}
+                </div>
+                <div class="col-6">
+                    <label class="form-label" for="registration_form_lastName">
+                        Last Name <span class="text-danger">*</span>
+                    </label>
+                    {{ form_widget(form.lastName, {
+                        'attr': {'id': 'registration_form_lastName', 'class': 'form-control', 'autocomplete': 'family-name'}
+                    }) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+                
+                {# Middle Name #}
+                <div class="col-12">
+                    <label class="form-label" for="registration_form_middleName">Middle Name <small class="text-muted">(optional)</small></label>
+                    {{ form_widget(form.middleName, {
+                        'attr': {'id': 'registration_form_middleName', 'class': 'form-control'}
+                    }) }}
+                </div>
+                
+                {# Email #}
+                <div class="col-12">
+                    <label class="form-label" for="registration_form_email">
+                        Email Address <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        {{ form_widget(form.email, {
+                            'attr': {'id': 'registration_form_email', 'class': 'form-control', 'autocomplete': 'email'}
+                        }) }}
+                    </div>
+                    {{ form_errors(form.email) }}
+                </div>
+                
+                {# Mobile #}
+                <div class="col-12">
+                    <label class="form-label" for="registration_form_mobileNumber">
+                        Mobile Number <small class="text-muted">(optional, E.164 format)</small>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                        {{ form_widget(form.mobileNumber, {
+                            'attr': {'id': 'registration_form_mobileNumber', 'class': 'form-control', 'placeholder': '+14155552671'}
+                        }) }}
+                    </div>
+                    {{ form_errors(form.mobileNumber) }}
+                </div>
+                
+                {# Password #}
+                <div class="col-12">
+                    <label class="form-label" for="registration_form_password_first">
+                        Password <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        {{ form_widget(form.password.first, {
+                            'attr': {'id': 'registration_form_password_first', 'class': 'form-control', 'placeholder': 'Min 8 chars, uppercase, number, special char'}
+                        }) }}
+                        <button class="btn btn-outline-secondary" type="button" id="togglePwd"
+                                onclick="togglePassword('registration_form_password_first', 'togglePwd')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {# Password strength bar #}
+                    <div class="password-strength mt-2" id="pwd-strength"></div>
+                    <div class="mt-1" id="pwd-requirements" style="display:none;">
+                        <small class="text-muted">
+                            <span id="req-length" class="me-2">✗ 8+ chars</span>
+                            <span id="req-upper" class="me-2">✗ Uppercase</span>
+                            <span id="req-lower" class="me-2">✗ Lowercase</span>
+                            <span id="req-digit" class="me-2">✗ Number</span>
+                            <span id="req-special">✗ Special char</span>
+                        </small>
+                    </div>
+                    {{ form_errors(form.password.first) }}
+                </div>
+                
+                {# Confirm Password #}
+                <div class="col-12">
+                    <label class="form-label" for="registration_form_password_second">
+                        Confirm Password <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        {{ form_widget(form.password.second, {
+                            'attr': {'id': 'registration_form_password_second', 'class': 'form-control', 'placeholder': 'Repeat password'}
+                        }) }}
+                        <button class="btn btn-outline-secondary" type="button" id="togglePwd2"
+                                onclick="togglePassword('registration_form_password_second', 'togglePwd2')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {{ form_errors(form.password.second) }}
+                </div>
+                
+                {# Terms #}
+                <div class="col-12">
+                    <div class="form-check">
+                        {{ form_widget(form.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                        <label class="form-check-label small" for="{{ form.agreeTerms.vars.id }}">
+                            I agree to the <a href="#" class="text-primary">Terms of Service</a> 
+                            and <a href="#" class="text-primary">Privacy Policy</a>
+                        </label>
+                    </div>
+                    {{ form_errors(form.agreeTerms) }}
+                </div>
+                
+                {# Submit #}
+                <div class="col-12 mt-2">
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </button>
+                </div>
+            </div>
+            
+            {{ form_end(form) }}
+            
+            {# Social Divider #}
+            <div class="auth-divider mt-3">
+                <span>or register with</span>
+            </div>
+            
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ path('oauth_connect', {'provider': 'google'}) }}" class="btn-outline-social">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Google
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ path('oauth_connect', {'provider': 'github'}) }}" class="btn-outline-social">
+                        <i class="bi bi-github" style="font-size: 1rem;"></i>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+            
+            <p class="text-center text-muted small mt-4 mb-0">
+                Already have an account? <a href="{{ path('app_login') }}" class="text-primary fw-medium">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Password strength indicator
+const pwdInput = document.getElementById('registration_form_password_first');
+const strengthBar = document.getElementById('pwd-strength');
+const requirements = document.getElementById('pwd-requirements');
+
+pwdInput.addEventListener('input', function() {
+    const val = this.value;
+    requirements.style.display = val.length > 0 ? 'block' : 'none';
+    
+    const checks = {
+        length: val.length >= 8,
+        upper: /[A-Z]/.test(val),
+        lower: /[a-z]/.test(val),
+        digit: /[0-9]/.test(val),
+        special: /[^a-zA-Z0-9]/.test(val)
+    };
+    
+    const passed = Object.values(checks).filter(Boolean).length;
+    
+    // Update requirement indicators
+    Object.entries(checks).forEach(([key, ok]) => {
+        const el = document.getElementById(`req-${key === 'length' ? 'length' : key === 'upper' ? 'upper' : key === 'lower' ? 'lower' : key === 'digit' ? 'digit' : 'special'}`);
+        if (el) {
+            el.style.color = ok ? '#06d6a0' : '#8b949e';
+            el.textContent = el.textContent.replace(/^[✓✗]/, ok ? '✓' : '✗');
+        }
+    });
+    
+    // Update strength bar
+    const colors = ['#ef476f', '#ef476f', '#ffd166', '#ffd166', '#06d6a0', '#06d6a0'];
+    const widths = ['20%', '35%', '50%', '70%', '85%', '100%'];
+    strengthBar.style.background = colors[passed];
+    strengthBar.style.width = widths[passed];
+    strengthBar.style.height = '4px';
+});
+</script>
+{% endblock %}

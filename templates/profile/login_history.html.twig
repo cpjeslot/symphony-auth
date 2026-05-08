@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login History{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {# Sidebar #}
+        <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+            <nav class="nav flex-column">
+                <a href="{{ path('app_profile') }}" class="nav-link">
+                    <i class="bi bi-person-circle"></i>Profile Overview
+                </a>
+                <a href="{{ path('app_profile_security') }}" class="nav-link">
+                    <i class="bi bi-shield-lock"></i>Security Settings
+                </a>
+                <a href="{{ path('app_profile_sessions') }}" class="nav-link">
+                    <i class="bi bi-laptop"></i>Active Sessions
+                </a>
+                <a href="{{ path('app_profile_login_history') }}" class="nav-link active">
+                    <i class="bi bi-clock-history"></i>Login History
+                </a>
+                <hr style="border-color: var(--border);">
+                <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i>Sign Out
+                </a>
+            </nav>
+        </div>
+
+        {# Main Content #}
+        <div class="col-md-9 col-lg-10 py-4 px-4">
+            <div class="mb-4">
+                <h2 class="fw-bold">Login History</h2>
+                <p class="text-muted">A record of recent login attempts to your account.</p>
+            </div>
+
+            <div class="glass-card p-4">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th>Status</th>
+                                <th>Date & Time</th>
+                                <th>IP Address</th>
+                                <th>Browser / OS</th>
+                                <th>Method</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            {% for login in login_history %}
+                                <tr>
+                                    <td>
+                                        {% if login.isSuccessful %}
+                                            <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Success</span>
+                                        {% else %}
+                                            <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>Failed</span>
+                                            {% if login.failureReason %}
+                                                <div class="smaller text-muted opacity-75">{{ login.failureReason }}</div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-white">{{ login.createdAt|date('M j, Y H:i:s') }}</td>
+                                    <td class="text-muted font-monospace">{{ login.ipAddress }}</td>
+                                    <td class="text-muted">
+                                        <span title="{{ login.userAgent }}">
+                                            {% if 'Chrome' in login.userAgent %}Chrome
+                                            {% elseif 'Firefox' in login.userAgent %}Firefox
+                                            {% elseif 'Safari' in login.userAgent %}Safari
+                                            {% elseif 'Edge' in login.userAgent %}Edge
+                                            {% else %}Unknown{% endif %}
+                                            on 
+                                            {% if 'Windows' in login.userAgent %}Windows
+                                            {% elseif 'Mac' in login.userAgent %}macOS
+                                            {% elseif 'Linux' in login.userAgent %}Linux
+                                            {% elseif 'Android' in login.userAgent %}Android
+                                            {% elseif 'iPhone' in login.userAgent %}iOS
+                                            {% else %}Unknown{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">{{ login.authMethod|capitalize }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        No login history found.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Only the last 50 attempts are shown. Contact support if you need more details.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

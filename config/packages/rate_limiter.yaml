@@ -1,0 +1,31 @@
+framework:
+    rate_limiter:
+        # Standard login limiter (used by Symfony security)
+        app_login:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '15 minutes'
+
+        # Registration limiter (prevent bot account creation)
+        registration_limiter:
+            policy: 'token_bucket'
+            limit: 3
+            rate: { interval: '1 hour', amount: 1 }
+
+        # Password reset limiter (prevent email bombing/enumeration)
+        password_reset_limiter:
+            policy: 'token_bucket'
+            limit: 3
+            rate: { interval: '1 hour', amount: 1 }
+
+        # API login limiter (more strict for programmatic access)
+        api_login_limiter:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '1 hour'
+
+        # General API request limiter (prevent scraping/abuse)
+        api_general:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '1 minute'
